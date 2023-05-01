@@ -1,6 +1,8 @@
 namespace ContextModels.Encoders;
 
-internal interface IEncoder<in TSource, out TResult>
+using Models;
+
+internal interface IEncoder
 {
-    TResult Encode(TSource source);
+    byte[] Encode(byte[] source);
 }

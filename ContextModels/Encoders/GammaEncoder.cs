@@ -1,17 +1,22 @@
 namespace ContextModels.Encoders;
 
-using System.Text;
+using Models;
 
-internal sealed class GammaEncoder : IEncoder<int, string>
+internal sealed class GammaEncoder : IEncoder
 {
-    public string Encode(int source)
+    public byte[] Encode(byte[] source)
     {
-        var stringBuilder = new StringBuilder();
-        var section = (int)Math.Log2(source);
-        for (var i = 0; i < section; i++)
-            stringBuilder.Append('0');
-        var binarySource = Convert.ToString(source, 2);
-        stringBuilder.Append(binarySource);
-        return stringBuilder.ToString();
+        var list = new List<byte>();
+        foreach (var b in source)
+        {
+            var section = (int)Math.Log2(b);
+            for (var i = 0; i < section; i++)
+                bits.Append(false);
+            var startIndex = section;
+            while (startIndex >= 0)
+                bits.Append((source & (1 << startIndex--)) > 0);
+        }
+
+        return list.ToArray();
     }
 }

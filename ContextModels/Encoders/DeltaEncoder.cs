@@ -1,24 +1,23 @@
 namespace ContextModels.Encoders;
 
-using System.Text;
+using Models;
 
-internal sealed class DeltaEncoder : IEncoder<int, string>
+internal sealed class DeltaEncoder : IEncoder
 {
-    private readonly GammaEncoder gammaEncoder;
-    
-    public DeltaEncoder(GammaEncoder gammaEncoder)
+    public byte[] Encode(byte[] source)
     {
-        this.gammaEncoder = gammaEncoder;
+        var pointer = 0;
+        var result = new List<byte>();
+        foreach (var b in source)
+        {
+            var section = (int)Math.Log2(b);
+            gammaEncoder.Encode((byte)(section + 1), bits);
+            var startIndex = section - 1;
+            while (startIndex >= 0)
+                bits.Append((source & (ulong)(1 << startIndex--)) > 0);
+        }
+        
+        return result.ToArray();
     }
     
-    public string Encode(int source)
-    {
-        var stringBuilder = new StringBuilder();
-        var section = (int)Math.Log2(source);
-        var encodedSection = gammaEncoder.Encode(section + 1);
-        stringBuilder.Append(encodedSection);
-        var encodedSource = Convert.ToString(source, 2);
-        stringBuilder.Append(encodedSource[1..]);
-        return stringBuilder.ToString();
-    }
 }
