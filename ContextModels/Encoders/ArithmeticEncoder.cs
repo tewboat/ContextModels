@@ -1,6 +1,6 @@
 ﻿namespace ContextModels.Encoders
 {
-    public class ArithmeticEncoder
+    public class ArithmeticEncoder : IEncoder
     {
         private static readonly ulong MaxValue = (ulong) Math.Pow(2, EncodingWindow); // 2 in EncodingWindow degree
 

@@ -9,10 +9,10 @@ internal static class Program
 {
     private static readonly IReadOnlyCollection<IRule> Rules = new IRule[]
         { new FirstLetterInParagraphRule(), new PronounRule(), new LetterAfterEndOfSentenceSignRule() };
-    
+
     private const byte ByteSize = sizeof(byte) * 8;
 
-    public static async Task Main(string[] args)
+    public static async Task Main()
     {
         const int k = 3;
         using var streamReader =
@@ -28,7 +28,9 @@ internal static class Program
             if (char.IsUpper(text[i]) && !CompliesWithRules(text, i))
                 positions[index] += (byte)(1 << (ByteSize - 1 - i % ByteSize));
         }
-        
+
+        var encoded = new ArithmeticEncoder().Encode(positions);
+
         var enthropy = GetEnthropy(positions);
 
         var length = 0d;
@@ -37,11 +39,11 @@ internal static class Program
             prob[b]++;
         for (var i = 0; i < 256; i++)
         {
-            length += prob[i] * (Math.Floor(Math.Log2(i + 1)) + 2 * Math.Floor(Math.Log2(Math.Floor(Math.Log2(i + 1)) + 1)) + 1);
+            length += prob[i] * (Math.Floor(Math.Log2(i + 1)) +
+                                 2 * Math.Floor(Math.Log2(Math.Floor(Math.Log2(i + 1)) + 1)) + 1);
         }
-
     }
-    
+
     private static double GetEnthropy(byte[] bytes)
     {
         var prob = new int[256];
@@ -76,8 +78,6 @@ internal static class Program
             var substring = string.Empty;
             UpdateContextModel(substring, char.ToLower(text[i]));
 
-            var index = i / ByteSize;
-
             for (var j = i; j < Math.Min(i + k, text.Length); j++)
             {
                 substring += char.ToLower(text[j]);
@@ -88,7 +88,7 @@ internal static class Program
 
         return contextModels;
     }
-    
+
     private static bool CompliesWithRules(string text, int position)
     {
         return Rules.Any(rule => rule.Validate(text, position));
