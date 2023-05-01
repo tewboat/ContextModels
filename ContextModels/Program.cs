@@ -9,29 +9,32 @@ using Rules.CapitalizationRules;
 internal static class Program
 {
     private static readonly IReadOnlyCollection<IRule> Rules = new IRule[]
-        { new FirstLetterInParagraphRule(), new PronounRule() };
+        {new FirstLetterInParagraphRule(), new PronounRule()};
 
     private static readonly DeltaEncoder DeltaEncoder = new(new GammaEncoder());
     private static readonly BinaryStringToIntegersEncoder BinaryStringToIntegersEncoder = new();
+    private static readonly ArithmeticEncoder arithmeticEncoder = new ArithmeticEncoder();
 
     public static async Task Main(string[] args)
     {
         const int k = 3;
-        using var streamReader = new StreamReader(@"E:\University\СSharp\ContextModels\ContextModels\doyle_the_adventures.txt");
+        using var streamReader =
+            new StreamReader(@"E:\University\СSharp\ContextModels\ContextModels\doyle_the_adventures.txt");
         var text = await streamReader.ReadToEndAsync();
 
         var encodedPositions = new StringBuilder();
 
         var contextModels = new Dictionary<string, ContextModel>();
-        
-        
+
+
         void UpdateContextModel(string substring, char nextCharacter)
         {
-            if(!contextModels!.TryGetValue(substring, out var model))
+            if (!contextModels!.TryGetValue(substring, out var model))
             {
                 model = new ContextModel(substring);
                 contextModels[substring] = model;
             }
+
             model.AddOccurence(nextCharacter);
         }
 
@@ -57,7 +60,6 @@ internal static class Program
         var encodedUpperLettersPositions = BinaryStringToIntegersEncoder.Encode(encodedPositions.ToString());
     }
 
-    
 
     private static bool CompliesWithRules(string text, int position)
     {
