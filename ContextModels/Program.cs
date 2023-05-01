@@ -31,6 +31,8 @@ internal static class Program
 
         var encoded = new ArithmeticEncoder().Encode(positions);
 
+        var encoded2 = new DeltaEncoder().Encode(positions);
+
         var enthropy = GetEnthropy(positions);
 
         var length = 0d;
