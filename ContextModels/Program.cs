@@ -28,7 +28,7 @@ internal static class Program
             if (char.IsUpper(text[i]) && !CompliesWithRules(text, i))
                 positions[index] += (byte)(1 << (ByteSize - 1 - i % ByteSize));
         }
-
+        
         var enthropy = GetEnthropy(positions);
 
         var length = 0d;
@@ -41,13 +41,7 @@ internal static class Program
         }
 
     }
-
-
-    private static bool CompliesWithRules(string text, int position)
-    {
-        return Rules.Any(rule => rule.Validate(text, position));
-    }
-
+    
     private static double GetEnthropy(byte[] bytes)
     {
         var prob = new int[256];
@@ -93,5 +87,10 @@ internal static class Program
         }
 
         return contextModels;
+    }
+    
+    private static bool CompliesWithRules(string text, int position)
+    {
+        return Rules.Any(rule => rule.Validate(text, position));
     }
 }
