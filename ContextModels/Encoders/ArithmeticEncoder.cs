@@ -3,7 +3,10 @@
     public class ArithmeticEncoder
     {
         private static readonly ulong MaxValue = (ulong) Math.Pow(2, EncodingWindow); // 2 in EncodingWindow degree
-        private static readonly ulong IntervalExpansion = (ulong) Math.Pow(2, EncodingWindow - 1); // 2 in EncodingWindow - 1 degree
+
+        private static readonly ulong
+            IntervalExpansion = (ulong) Math.Pow(2, EncodingWindow - 1); // 2 in EncodingWindow - 1 degree
+
         private const int EncodingWindow = 32;
 
         public byte[] Encode(byte[] source)
@@ -16,6 +19,15 @@
             var l = 0ul;
             var h = MaxValue - 1;
             var bits = 0;
+
+            void DecrementByteOffset()
+            {
+                byteOffset = (byteOffset + 7) % 8;
+                totalBits++;
+                if (byteOffset != 7) return;
+                offset++;
+                result.Add(0);
+            }
 
             foreach (var b in source)
             {
@@ -36,13 +48,7 @@
                 {
                     var firstBit = (byte) ((l & off) > 0 ? 1 << byteOffset : 0);
                     result[offset] |= firstBit;
-                    byteOffset = (byteOffset + 7) % 8;
-                    totalBits++;
-                    if (byteOffset == 7)
-                    {
-                        offset++;
-                        result.Add(0);
-                    }
+                    DecrementByteOffset();
 
                     l <<= 1;
                     h = (h << 1) | 1;
@@ -50,30 +56,18 @@
                     for (var i = 0; i < bits; i++)
                     {
                         result[offset] |= (byte) (firstBit == 0 ? 1 << byteOffset : 0);
-                        byteOffset = (byteOffset + 7) % 8;
-                        totalBits++;
-                        if (byteOffset == 7)
-                        {
-                            offset++;
-                            result.Add(0);
-                        }
+                        DecrementByteOffset();
                     }
 
                     bits = 0;
-                    
+
                     for (var i = EncodingWindow - 2; i >= 0; i--)
                     {
                         if ((l & off) != (h & off))
                             break;
                         result[offset] |= (byte) ((l & off) > 0 ? 1 << byteOffset : 0);
-                        byteOffset = (byteOffset + 7) % 8;
-                        totalBits++;
-                        if (byteOffset == 7)
-                        {
-                            offset++;
-                            result.Add(0);
-                        }
-                        
+                        DecrementByteOffset();
+
                         l <<= 1;
                         h = (h << 1) | 1;
                     }
@@ -100,6 +94,7 @@
             var newH = l + Math.Ceiling((b + 1) * (h - l + 1) / MaxValue) - 1;
             return ((ulong) newL, (ulong) newH);
         }
+
 
         private int GetBits(ulong l, ulong h)
         {
