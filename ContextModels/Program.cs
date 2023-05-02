@@ -1,5 +1,7 @@
 ﻿namespace ContextModels;
 
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using Encoders;
 using Models;
 using Rules;
@@ -20,6 +22,7 @@ internal static class Program
         var text = await streamReader.ReadToEndAsync();
 
         var contextModels = GetContextModels(text, k);
+        Console.WriteLine($"ContextModels size {GetSize(contextModels.Values)}");
 
         var positions = new byte[(int)Math.Ceiling(text.Length / (double)ByteSize)];
         for (var i = 0; i < text.Length; i++)
@@ -28,7 +31,7 @@ internal static class Program
             if (char.IsUpper(text[i]) && !CompliesWithRules(text, i))
                 positions[index] += (byte)(1 << (ByteSize - 1 - i % ByteSize));
         }
-        
+
         var encoded = new ArithmeticEncoder(12).Encode(positions);
         var encoded2 = new DeltaEncoder().Encode(positions);
 
@@ -56,6 +59,19 @@ internal static class Program
             .Select(p => p / (double)bytes.Length)
             .Select(probability => probability * -Math.Log2(probability))
             .Sum();
+    }
+
+    private static long GetSize(IEnumerable<ContextModel> models)
+    {
+        var size = 0L;
+        foreach (var model in models)
+        {
+            size += model.String.Length;
+            size += 4;
+            size += model.CharactersEncounteredWithLeftTextCount * (1 + 4);
+        }
+
+        return size;
     }
 
 
