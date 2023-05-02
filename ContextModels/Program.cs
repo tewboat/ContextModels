@@ -16,7 +16,7 @@ internal static class Program
     {
         const int k = 3;
         using var streamReader =
-            new StreamReader(@"E:\University\СSharp\ContextModels\ContextModels\doyle_the_adventures.txt");
+            new StreamReader(@"doyle_the_adventures.txt");
         var text = await streamReader.ReadToEndAsync();
 
         var contextModels = GetContextModels(text, k);
@@ -28,12 +28,11 @@ internal static class Program
             if (char.IsUpper(text[i]) && !CompliesWithRules(text, i))
                 positions[index] += (byte)(1 << (ByteSize - 1 - i % ByteSize));
         }
-
-        var encoded = new ArithmeticEncoder().Encode(positions);
-
+        
+        var encoded = new ArithmeticEncoder(12).Encode(positions);
         var encoded2 = new DeltaEncoder().Encode(positions);
 
-        var enthropy = GetEnthropy(positions);
+        var entropy = GetEntropy(positions);
 
         var length = 0d;
         var prob = new int[256];
@@ -46,7 +45,7 @@ internal static class Program
         }
     }
 
-    private static double GetEnthropy(byte[] bytes)
+    private static double GetEntropy(byte[] bytes)
     {
         var prob = new int[256];
         foreach (var b in bytes)

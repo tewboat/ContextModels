@@ -2,12 +2,18 @@
 {
     public class ArithmeticEncoder : IEncoder
     {
-        private static readonly ulong MaxValue = (ulong) Math.Pow(2, EncodingWindow); // 2 in EncodingWindow degree
+        private readonly ulong maxValue; // 2 in EncodingWindow degree
 
-        private static readonly ulong
-            IntervalExpansion = (ulong) Math.Pow(2, EncodingWindow - 1); // 2 in EncodingWindow - 1 degree
+        private readonly ulong intervalExpansion; // 2 in EncodingWindow - 1 degree
 
-        private const int EncodingWindow = 32;
+        private readonly int encodingWindow;
+
+        public ArithmeticEncoder(int window)
+        {
+            encodingWindow = window;
+            intervalExpansion = (ulong) Math.Pow(2, encodingWindow - 1);
+            maxValue = (ulong) Math.Pow(2, encodingWindow);
+        }
 
         public byte[] Encode(byte[] source)
         {
@@ -17,7 +23,7 @@
             var byteOffset = 7;
             var counter = Enumerable.Repeat(1, 256).ToArray();
             var l = 0ul;
-            var h = MaxValue - 1;
+            var h = maxValue - 1;
             var bits = 0;
 
             void DecrementByteOffset()
@@ -34,14 +40,14 @@
                 if (offset >= result.Count)
                     result.Add(0);
                 (l, h) = Project(counter, b, l, h);
-                var off = (ulong) 1 << (EncodingWindow - 1);
+                var off = (ulong) 1 << (encodingWindow - 1);
                 if ((l & off) != (h & off))
                 {
                     bits = GetBits(l, h);
                     for (var i = 0; i < bits; i++)
                     {
-                        l = (l << 1) - IntervalExpansion;
-                        h = (h << 1) - IntervalExpansion + 1;
+                        l = (l << 1) - intervalExpansion;
+                        h = (h << 1) - intervalExpansion + 1;
                     }
                 }
                 else
@@ -61,7 +67,7 @@
 
                     bits = 0;
 
-                    for (var i = EncodingWindow - 2; i >= 0; i--)
+                    for (var i = encodingWindow - 2; i >= 0; i--)
                     {
                         if ((l & off) != (h & off))
                             break;
@@ -88,17 +94,17 @@
             var summaryCount = counter.Sum();
             var alpha = c / (double) summaryCount;
             var beta = (c + counter[element]) / (double) summaryCount;
-            var a = Math.Ceiling(alpha * MaxValue);
-            var b = Math.Ceiling(beta * MaxValue) - 1;
-            var newL = l + Math.Ceiling(a * (h - l + 1) / MaxValue);
-            var newH = l + Math.Ceiling((b + 1) * (h - l + 1) / MaxValue) - 1;
+            var a = Math.Ceiling(alpha * maxValue);
+            var b = Math.Ceiling(beta * maxValue) - 1;
+            var newL = l + Math.Ceiling(a * (h - l + 1) / maxValue);
+            var newH = l + Math.Ceiling((b + 1) * (h - l + 1) / maxValue) - 1;
             return ((ulong) newL, (ulong) newH);
         }
 
 
         private int GetBits(ulong l, ulong h)
         {
-            var offset = EncodingWindow - 2;
+            var offset = encodingWindow - 2;
             var counter = 0;
             while (offset >= 0)
             {

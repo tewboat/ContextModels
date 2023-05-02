@@ -8,7 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <TextAsset Include="doyle_the_adventures.txt" />
+        <None Include="doyle_the_adventures.txt">
+            <Link>doyle_the_adventures.txt</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
