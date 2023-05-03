@@ -1,5 +1,6 @@
 namespace ContextModels.Models;
 
+[Serializable]
 internal sealed class ContextModel
 {
     public string String { get; }
