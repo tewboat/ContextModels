@@ -1,7 +1,6 @@
 ﻿namespace ContextModels;
 
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using Encoders;
 using Models;
 using Rules;
@@ -17,12 +16,8 @@ internal static class Program
     public static async Task Main()
     {
         const int k = 3;
-        using var streamReader =
-            new StreamReader(@"doyle_the_adventures.txt");
+        using var streamReader = new StreamReader(@"doyle_the_adventures.txt");
         var text = await streamReader.ReadToEndAsync();
-
-        var contextModels = GetContextModels(text, k);
-        Console.WriteLine($"ContextModels size {GetSize(contextModels.Values)}");
 
         var positions = new byte[(int)Math.Ceiling(text.Length / (double)ByteSize)];
         for (var i = 0; i < text.Length; i++)
@@ -31,21 +26,15 @@ internal static class Program
             if (char.IsUpper(text[i]) && !CompliesWithRules(text, i))
                 positions[index] += (byte)(1 << (ByteSize - 1 - i % ByteSize));
         }
-
-        var encoded = new ArithmeticEncoder(12).Encode(positions);
-        var encoded2 = new DeltaEncoder().Encode(positions);
-
+        
         var entropy = GetEntropy(positions);
+        Console.WriteLine($"Capital letters byte array entropy: {entropy}");
 
-        var length = 0d;
-        var prob = new int[256];
-        foreach (var b in positions)
-            prob[b]++;
-        for (var i = 0; i < 256; i++)
-        {
-            length += prob[i] * (Math.Floor(Math.Log2(i + 1)) +
-                                 2 * Math.Floor(Math.Log2(Math.Floor(Math.Log2(i + 1)) + 1)) + 1);
-        }
+        new ArithmeticEncoder(12).Encode(positions);
+        new DeltaEncoder().Encode(positions);
+
+        var contextModels = GetContextModels(text, k);
+        Console.WriteLine($"ContextModels size {GetSize(contextModels.Values)} bytes");
     }
 
     private static double GetEntropy(byte[] bytes)
@@ -66,9 +55,9 @@ internal static class Program
         var size = 0L;
         foreach (var model in models)
         {
-            size += model.String.Length;
-            size += 4;
-            size += model.CharactersEncounteredWithLeftTextCount * (1 + 4);
+            size += model.String.Length * 2; // Считаем, что каждый символ куодируется двумя байтами
+            size += 4; // размер int
+            size += model.CharactersEncounteredWithLeftTextCount * (2 + 4); // количество пар (char, int) умноженное на размер пары в байтах 
         }
 
         return size;

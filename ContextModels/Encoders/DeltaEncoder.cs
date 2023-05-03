@@ -40,7 +40,7 @@ internal sealed class DeltaEncoder : IEncoder
             }
         }
         
-        Console.WriteLine(totalBits);
+        Console.WriteLine($"The length of the delta encoder sequence: {totalBits}");
         return result.ToArray();
     }
     

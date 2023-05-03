@@ -82,7 +82,7 @@
                 counter[b]++;
             }
 
-            Console.WriteLine(totalBits);
+            Console.WriteLine($"The length of the arithmetic encoder sequence: {totalBits}");
             return result.ToArray();
         }
 
